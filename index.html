@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>趋势图抓取</title>
+</head>
+<body>
+  <h1>多语言趋势图搜索</h1>
+  <input type="text" id="keyword" placeholder="请输入关键词（支持中英日）" />
+  <select id="platform">
+    <option value="bing">Bing</option>
+    <option value="pinterest">Pinterest</option>
+  </select>
+  <button onclick="searchImages()">搜索</button>
+  <div id="results"></div>
+
+  <script>
+    function searchImages() {
+      const query = document.getElementById('keyword').value;
+      const platform = document.getElementById('platform').value;
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML = '加载中...';
+
+      fetch(`/search?q=${encodeURIComponent(query)}&platform=${platform}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.images) {
+            resultsDiv.innerHTML = '';
+            data.images.forEach(url => {
+              const img = document.createElement('img');
+              img.src = url;
+              img.style.width = '200px';
+              img.style.margin = '10px';
+              resultsDiv.appendChild(img);
+            });
+          } else {
+            resultsDiv.innerHTML = '没有找到图片';
+          }
+        })
+        .catch(() => {
+          resultsDiv.innerHTML = '出错了，请稍后再试';
+        });
+    }
+  </script>
+</body>
+</html>
