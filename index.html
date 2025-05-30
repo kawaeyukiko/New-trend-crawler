@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>趋势图抓取</title>
+  <title>多语言趋势图搜索</title>
 </head>
 <body>
   <h1>多语言趋势图搜索</h1>
-  <input type="text" id="keyword" placeholder="请输入关键词（支持中英日）" />
+  <input type="text" id="keyword" placeholder="请输入关键词（中英日）" />
   <select id="platform">
     <option value="bing">Bing</option>
     <option value="pinterest">Pinterest</option>
+    <option value="xhs">小红书</option>
+    <option value="weibo">微博</option>
   </select>
   <button onclick="searchImages()">搜索</button>
   <div id="results"></div>
