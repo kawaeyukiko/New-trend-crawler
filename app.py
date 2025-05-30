@@ -18,7 +18,6 @@ def upload_to_imgbb(image_url, keyword):
             'image': encoded,
             'name': f"{keyword}_{int(time.time())}"
         })
-        print("imgbb 响应：", response.text)
         result = response.json()
         return result['data']['url']
     except Exception as e:
@@ -40,26 +39,64 @@ def search():
     image_urls = []
     headers = {"User-Agent": "Mozilla/5.0"}
 
-    if platform == 'bing':
-        search_url = f"https://www.bing.com/images/search?q={query}"
-    elif platform == 'pinterest':
-        search_url = f"https://www.pinterest.com/search/pins/?q={query}"
-    else:
-        return jsonify({'error': '不支持的平台'}), 400
-
     try:
-        r = requests.get(search_url, headers=headers, timeout=10)
-        soup = BeautifulSoup(r.text, 'html.parser')
-        imgs = soup.find_all('img')
-        print(f"共找到图片标签：{len(imgs)} 个")
+        if platform == 'bing':
+            search_url = f"https://www.bing.com/images/search?q={query}"
+            r = requests.get(search_url, headers=headers)
+            soup = BeautifulSoup(r.text, 'html.parser')
+            imgs = soup.find_all('img')
+            print(f"Bing 抓到图片数：{len(imgs)}")
+            for img in imgs:
+                src = img.get('src')
+                if src and 'http' in src:
+                    uploaded = upload_to_imgbb(src, query)
+                    if uploaded:
+                        image_urls.append(uploaded)
 
-        for img in imgs:
-            src = img.get('src')
-            if src and 'http' in src:
-                uploaded = upload_to_imgbb(src, query)
-                if uploaded:
-                    image_urls.append(uploaded)
+        elif platform == 'pinterest':
+            search_url = f"https://www.pinterest.com/search/pins/?q={query}"
+            r = requests.get(search_url, headers=headers)
+            soup = BeautifulSoup(r.text, 'html.parser')
+            imgs = soup.find_all('img')
+            print(f"Pinterest 抓到图片数：{len(imgs)}")
+            for img in imgs:
+                src = img.get('src')
+                if src and 'http' in src:
+                    uploaded = upload_to_imgbb(src, query)
+                    if uploaded:
+                        image_urls.append(uploaded)
+
+        elif platform == 'xhs':
+            search_url = f"https://www.xiaohongshu.com/search_result?keyword={query}"
+            r = requests.get(search_url, headers=headers)
+            soup = BeautifulSoup(r.text, 'html.parser')
+            imgs = soup.find_all('img')
+            print(f"小红书 抓到图片数：{len(imgs)}")
+            for img in imgs:
+                src = img.get('src')
+                if src and 'http' in src and 'xhslink.com' not in src:
+                    uploaded = upload_to_imgbb(src, query)
+                    if uploaded:
+                        image_urls.append(uploaded)
+
+        elif platform == 'weibo':
+            search_url = f"https://s.weibo.com/weibo?q={query}"
+            r = requests.get(search_url, headers=headers)
+            soup = BeautifulSoup(r.text, 'html.parser')
+            imgs = soup.find_all('img')
+            print(f"微博 抓到图片数：{len(imgs)}")
+            for img in imgs:
+                src = img.get('src')
+                if src and 'http' in src:
+                    uploaded = upload_to_imgbb(src, query)
+                    if uploaded:
+                        image_urls.append(uploaded)
+
+        else:
+            return jsonify({'error': '不支持的平台'}), 400
+
         return jsonify({'images': image_urls[:15]})
+
     except Exception as e:
         print(f"整体处理失败: {e}")
         return jsonify({'error': f'抓图失败: {e}'}), 500
